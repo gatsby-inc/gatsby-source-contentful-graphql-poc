@@ -1,6 +1,8 @@
 const {
   loadSchema,
   createDefaultQueryExecutor,
+  readOrGenerateDefaultFragments,
+  compileNodeQueries,
 } = require(`gatsby-graphql-source-toolkit`);
 require("dotenv").config();
 
@@ -13,6 +15,38 @@ async function test() {
   const schema = await loadSchema(execute);
 
   console.log(schema);
+
+  const gatsbyNodeTypes = [
+    {
+      remoteTypeName: `BlogPost`,
+      queries: `
+        query LIST_BLOG_POSTS($limit: Int, $offset: Int) {
+          blogPostsCollection(limit: $limit, skip: $offset) {
+            remoteTypeName: __typename
+            ..._BlogPostId_
+          }
+        }
+
+        fragment _BlogPostId_ on BlogPost {
+          __typename
+          id
+        }
+      `,
+    },
+  ];
+
+  const fragments = await readOrGenerateDefaultFragments(`./`, {
+    schema,
+    gatsbyNodeTypes,
+  });
+
+  const documents = compileNodeQueries({
+    schema,
+    gatsbyNodeTypes,
+    customFragments: fragments,
+  });
+
+  console.log(documents);
 }
 
 test();
