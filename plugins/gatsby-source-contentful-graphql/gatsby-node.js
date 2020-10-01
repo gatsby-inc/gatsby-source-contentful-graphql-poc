@@ -6,6 +6,7 @@ const {
   buildNodeDefinitions,
   createSchemaCustomization,
   sourceAllNodes,
+  writeCompiledQueries,
 } = require(`gatsby-graphql-source-toolkit`);
 require("dotenv").config();
 
@@ -24,7 +25,7 @@ async function createConfig(gatsbyApi) {
       remoteTypeName: `BlogPost`,
       queries: `
         query LIST_BLOG_POSTS($limit: Int, $offset: Int) {
-          blogPostsCollection(limit: $limit, skip: $offset) {
+          blogPostCollection(limit: $limit, skip: $offset) {
             items { ..._BlogPostId_ ...BlogPostFragment }
           }
         }
@@ -57,6 +58,8 @@ async function createConfig(gatsbyApi) {
     gatsbyNodeTypes,
     customFragments: fragments,
   });
+
+  await writeCompiledQueries("./sourcing-queries", documents);
 
   return {
     gatsbyApi,

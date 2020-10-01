@@ -10,7 +10,7 @@
   "dependencies": {
     "dotenv": "^8.2.0",
     "gatsby": "^2.24.66",
-    "gatsby-graphql-source-toolkit": "^0.6.0",
+    "gatsby-graphql-source-toolkit": "^0.6.2",
     "graphql": "^15.3.0",
     "react": "^16.13.1",
     "react-dom": "^16.13.1"
