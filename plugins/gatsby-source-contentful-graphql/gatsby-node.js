@@ -43,52 +43,28 @@ async function createConfig(gatsbyApi) {
   const execute = createDefaultQueryExecutor(schemaUrl);
   const schema = await loadSchema(execute);
 
-  console.log(schema);
+  const type = schema.getType(`Query`);
+  const collectionTypes = Object.keys(type.getFields()).filter((k) =>
+    k.includes("Collection")
+  );
 
-  const gatsbyNodeTypes = [
-    {
-      remoteTypeName: `BlogPost`,
-      queries: `
-        query LIST_BLOG_POSTS($limit: Int, $offset: Int) {
-          blogPostCollection(limit: $limit, skip: $offset) {
-            items { ..._BlogPostId_ }
-          }
+  const gatsbyNodeTypes = collectionTypes.map((t) => {
+    const typeName = t.replace(`Collection`, ``);
+    const remoteTypeName = typeName.charAt(0).toUpperCase() + typeName.slice(1);
+    const queries = `
+      query LIST_${remoteTypeName} ($limit: Int, $offset: Int) {
+        ${t}(limit: $limit, skip: $offset) {
+          items { ..._${remoteTypeName}Id_ }
         }
-        fragment _BlogPostId_ on BlogPost {
-          __typename
-          sys { id }
-        }
-      `,
-    },
-    {
-      remoteTypeName: `Asset`,
-      queries: `
-        query LIST_ASSETS($limit: Int, $offset: Int) {
-          assetCollection(limit: $limit, skip: $offset) {
-            items { ..._AssetId_ }
-          }
-        }
-        fragment _AssetId_ on Asset {
-          __typename
-          sys { id }
-        }
-      `,
-    },
-    {
-      remoteTypeName: `Person`,
-      queries: `
-        query LIST_PERSONS($limit: Int, $offset: Int) {
-          personCollection(limit: $limit, skip: $offset) {
-            items { ..._PersonId_ }
-          }
-        }
-        fragment _PersonId_ on Person {
-          __typename
-          sys { id }
-        }
-      `,
-    },
-  ];
+      }
+      fragment _${remoteTypeName}Id_ on ${remoteTypeName} {
+        __typename
+        sys { id }
+      }
+    `;
+
+    return { remoteTypeName, queries };
+  });
 
   const fragments = await readOrGenerateDefaultFragments(`./`, {
     schema,
@@ -106,20 +82,7 @@ async function createConfig(gatsbyApi) {
   return {
     gatsbyApi,
     schema,
-    execute: ({ operationName, query, variables = {} }) => {
-      console.log(
-        `
-      
-        Executing query ${operationName}!
-      
-      
-      `,
-        query,
-        variables
-      );
-
-      return execute({ operationName, query, variables });
-    },
+    execute,
     gatsbyTypePrefix: `Contentful`,
     gatsbyNodeDefs: buildNodeDefinitions({ gatsbyNodeTypes, documents }),
     paginationAdapters: [PaginateContentful],
