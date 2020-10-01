@@ -31,7 +31,7 @@ async function createConfig(gatsbyApi) {
         }
         fragment _BlogPostId_ on BlogPost {
           __typename
-          id: sys { id }
+          sys { id }
         }
         fragment BlogPostFragment on BlogPost {
           remoteId: sys {
