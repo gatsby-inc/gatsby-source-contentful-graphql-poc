@@ -20,7 +20,7 @@ const PaginateContentful = {
     };
   },
   next(state, page) {
-    const limit = Number(state.variables.limit) || 100;
+    const limit = Number(state.variables.limit) || 20;
     const offset = Number(state.variables.offset) + limit;
     return {
       variables: { limit, offset },
